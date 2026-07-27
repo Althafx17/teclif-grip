@@ -1,26 +1,71 @@
 import { useState, useEffect } from 'react';
 import useScrollReveal from '../hooks/useScrollReveal';
 
+// Support either VITE_SCRIPT_ID or full VITE_SCRIPT_URL from .env
+const SCRIPT_ID = import.meta.env.VITE_SCRIPT_ID || "AKfycbxxiZzyDBBB6Y4kZNTytrfOBmLXEr_c30kPA4wlMVhskbcf1zHLwx8nyH_WUMqdCJfUmw";
+const SCRIPT_URL = import.meta.env.VITE_SCRIPT_URL || `https://script.google.com/macros/s/${SCRIPT_ID}/exec`;
+
 export default function Booking() {
   const ref = useScrollReveal();
-  const [showToast, setShowToast] = useState(false);
-  const [buttonText, setButtonText] = useState('Request booking');
   const [minDate, setMinDate] = useState('');
+
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    vehicle: '',
+    service: '',
+    date: '',
+    time: '',
+    notes: '',
+  });
+
+  const [status, setStatus] = useState('idle'); // idle | loading | success | error
 
   useEffect(() => {
     setMinDate(new Date().toISOString().split('T')[0]);
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const form = e.target;
     if (!form.checkValidity()) {
       form.reportValidity();
       return;
     }
-    setShowToast(true);
-    setButtonText('Request sent ✓');
-    setTimeout(() => form.reset(), 400);
+
+    setStatus('loading');
+
+    try {
+      if (SCRIPT_URL && !SCRIPT_URL.includes('YOUR_ID')) {
+        await fetch(SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors', // required for Apps Script cross-origin requests
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify(formData),
+        });
+      } else {
+        // Fallback simulation if SCRIPT_URL is not yet configured
+        await new Promise((res) => setTimeout(res, 600));
+      }
+
+      setStatus('success');
+      setFormData({
+        name: '',
+        phone: '',
+        vehicle: '',
+        service: '',
+        date: '',
+        time: '',
+        notes: '',
+      });
+    } catch (err) {
+      console.error('Booking submission error:', err);
+      setStatus('error');
+    }
   };
 
   return (
@@ -47,32 +92,116 @@ export default function Booking() {
 
         <form id="bookForm" className="reveal" data-d="1" noValidate onSubmit={handleSubmit}>
           <div className="grid2">
-            <div className="field"><label htmlFor="name">Name</label><input id="name" name="name" placeholder="Your name" required /></div>
-            <div className="field"><label htmlFor="phone">Phone</label><input id="phone" name="phone" type="tel" placeholder="+91 …" required /></div>
+            <div className="field">
+              <label htmlFor="name">Name</label>
+              <input
+                id="name"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="Your name"
+                required
+              />
+            </div>
+            <div className="field">
+              <label htmlFor="phone">Phone</label>
+              <input
+                id="phone"
+                name="phone"
+                type="tel"
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="+91 …"
+                required
+              />
+            </div>
           </div>
+
           <div className="grid2">
-            <div className="field"><label htmlFor="vehicle">Vehicle</label><input id="vehicle" name="vehicle" placeholder="Make & model" required /></div>
+            <div className="field">
+              <label htmlFor="vehicle">Vehicle</label>
+              <input
+                id="vehicle"
+                name="vehicle"
+                value={formData.vehicle}
+                onChange={handleChange}
+                placeholder="Make & model"
+                required
+              />
+            </div>
             <div className="field">
               <label htmlFor="service">Service</label>
-              <select id="service" name="service" required defaultValue="">
+              <select
+                id="service"
+                name="service"
+                value={formData.service}
+                onChange={handleChange}
+                required
+              >
                 <option value="" disabled>Choose a service</option>
-                <option>Tyres</option>
-                <option>Car Care / Service</option>
-                <option>Car Wash</option>
-                <option>Oil Change</option>
-                <option>Detailing</option>
-                <option>Full inspection</option>
+                <option value="Tyres">Tyres</option>
+                <option value="Car Care / Service">Car Care / Service</option>
+                <option value="Car Wash">Car Wash</option>
+                <option value="Oil Change">Oil Change</option>
+                <option value="Detailing">Detailing</option>
+                <option value="Full inspection">Full inspection</option>
               </select>
             </div>
           </div>
+
           <div className="grid2">
-            <div className="field"><label htmlFor="date">Preferred date</label><input id="date" name="date" type="date" min={minDate} required /></div>
-            <div className="field"><label htmlFor="time">Preferred time</label><input id="time" name="time" type="time" required /></div>
+            <div className="field">
+              <label htmlFor="date">Preferred date</label>
+              <input
+                id="date"
+                name="date"
+                type="date"
+                min={minDate}
+                value={formData.date}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div className="field">
+              <label htmlFor="time">Preferred time</label>
+              <input
+                id="time"
+                name="time"
+                type="time"
+                value={formData.time}
+                onChange={handleChange}
+                required
+              />
+            </div>
           </div>
-          <div className="field"><label htmlFor="notes">Notes (optional)</label><textarea id="notes" name="notes" rows="3" placeholder="Anything we should know?"></textarea></div>
-          <button type="submit" className="btn btn-amber">{buttonText}</button>
+
+          <div className="field">
+            <label htmlFor="notes">Notes (optional)</label>
+            <textarea
+              id="notes"
+              name="notes"
+              rows="3"
+              value={formData.notes}
+              onChange={handleChange}
+              placeholder="Anything we should know?"
+            ></textarea>
+          </div>
+
+          <button type="submit" className="btn btn-amber" disabled={status === 'loading'}>
+            {status === 'loading' ? 'Booking...' : 'Request booking'}
+          </button>
+
           <p className="form-note">No payment now — we'll call to confirm your slot.</p>
-          <div className={`toast${showToast ? ' show' : ''}`} id="toast">Thanks — your request is in. We'll call you shortly to confirm. That's the GRIP.</div>
+
+          <div className={`toast${status === 'success' ? ' show' : ''}`} id="toast">
+            Thanks — your request is in. We'll call you shortly to confirm. That's the GRIP.
+          </div>
+
+          {status === 'error' && (
+            <div className="toast show" style={{ borderColor: '#ff4d4d', color: '#ff8080', background: 'rgba(255,77,77,0.12)' }}>
+              Something went wrong. Please try again or call us directly.
+            </div>
+          )}
         </form>
       </div>
     </section>
