@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import useScrollReveal from '../hooks/useScrollReveal';
 
 // Active Google Apps Script Web App URL (configurable via VITE_SCRIPT_URL in .env or Vercel)
-const SCRIPT_URL = import.meta.env.VITE_SCRIPT_URL || "https://script.google.com/macros/s/AKfycbxxiZzyDBBB6Y4kZNTytrfOBmLXEr_c30kPA4wlMVhskbcf1zHLwx8nyH_WUMqdCJfUmw/exec";
+const SCRIPT_URL = import.meta.env.VITE_SCRIPT_URL || "https://script.google.com/macros/s/AKfycbxxiZzyDBBB6Y4kZNTytrfOBmLXEr_c30kPA4wlMVhskbcf1zHLwx8nyH_WUMqdCJfUmw/exec"||"https://script.google.com/macros/s/AKfycbx42ZhrFWP9jBvsWRBGFqUuvRElieD8lq88EOk569aIgsfud3ToKnTvVIHCCsKLhauZ/exec";
 
 export default function Booking() {
   const ref = useScrollReveal();
@@ -18,23 +18,76 @@ export default function Booking() {
     notes: '',
   });
 
+  const [errors, setErrors] = useState({});
   const [status, setStatus] = useState('idle'); // idle | loading | success | error
 
   useEffect(() => {
     setMinDate(new Date().toISOString().split('T')[0]);
   }, []);
 
+  const validateField = (name, value) => {
+    const trimmedValue = value.trim();
+
+    switch (name) {
+      case 'name':
+        if (!trimmedValue) return 'Please enter your name.';
+        if (trimmedValue.length < 2) return 'Please enter at least 2 characters for your name.';
+        return '';
+      case 'phone':
+        if (!trimmedValue) return 'Please enter your phone number.';
+        if (!/^[0-9+()\-\s]{7,15}$/.test(trimmedValue)) return 'Please enter a valid phone number.';
+        return '';
+      case 'vehicle':
+        if (!trimmedValue) return 'Please enter your vehicle make and model.';
+        if (trimmedValue.length < 2) return 'Please enter a valid vehicle name.';
+        return '';
+      case 'service':
+        if (!trimmedValue) return 'Please choose a service.';
+        return '';
+      case 'date':
+        if (!trimmedValue) return 'Please select a preferred date.';
+        if (new Date(trimmedValue) < new Date(new Date().toDateString())) return 'Please choose a future date.';
+        return '';
+      case 'time':
+        if (!trimmedValue) return 'Please select a preferred time.';
+        return '';
+      case 'notes':
+        if (trimmedValue && trimmedValue.length > 200) return 'Notes should be 200 characters or less.';
+        return '';
+      default:
+        return '';
+    }
+  };
+
+  const validateForm = (data) => {
+    const nextErrors = {};
+
+    Object.entries(data).forEach(([name, value]) => {
+      const message = validateField(name, value);
+      if (message) nextErrors[name] = message;
+    });
+
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
+
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: validateField(name, value) }));
+    if (status !== 'idle') setStatus('idle');
+  };
+
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    setErrors((prev) => ({ ...prev, [name]: validateField(name, value) }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const form = e.target;
-    if (!form.checkValidity()) {
-      form.reportValidity();
-      return;
-    }
+
+    const isValid = validateForm(formData);
+    if (!isValid) return;
 
     setStatus('loading');
 
@@ -52,6 +105,7 @@ export default function Booking() {
       }
 
       setStatus('success');
+      setErrors({});
       setFormData({
         name: '',
         phone: '',
@@ -91,18 +145,21 @@ export default function Booking() {
 
         <form id="bookForm" className="reveal" data-d="1" noValidate onSubmit={handleSubmit}>
           <div className="grid2">
-            <div className="field">
+            <div className={`field ${errors.name ? 'has-error' : ''}`}>
               <label htmlFor="name">Name</label>
               <input
                 id="name"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 placeholder="Your name"
-                required
+                aria-invalid={Boolean(errors.name)}
+                aria-describedby={errors.name ? 'name-error' : undefined}
               />
+              {errors.name && <p className="field-error" id="name-error" role="alert">{errors.name}</p>}
             </div>
-            <div className="field">
+            <div className={`field ${errors.phone ? 'has-error' : ''}`}>
               <label htmlFor="phone">Phone</label>
               <input
                 id="phone"
@@ -110,32 +167,40 @@ export default function Booking() {
                 type="tel"
                 value={formData.phone}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 placeholder="+91 …"
-                required
+                aria-invalid={Boolean(errors.phone)}
+                aria-describedby={errors.phone ? 'phone-error' : undefined}
               />
+              {errors.phone && <p className="field-error" id="phone-error" role="alert">{errors.phone}</p>}
             </div>
           </div>
 
           <div className="grid2">
-            <div className="field">
+            <div className={`field ${errors.vehicle ? 'has-error' : ''}`}>
               <label htmlFor="vehicle">Vehicle</label>
               <input
                 id="vehicle"
                 name="vehicle"
                 value={formData.vehicle}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 placeholder="Make & model"
-                required
+                aria-invalid={Boolean(errors.vehicle)}
+                aria-describedby={errors.vehicle ? 'vehicle-error' : undefined}
               />
+              {errors.vehicle && <p className="field-error" id="vehicle-error" role="alert">{errors.vehicle}</p>}
             </div>
-            <div className="field">
+            <div className={`field ${errors.service ? 'has-error' : ''}`}>
               <label htmlFor="service">Service</label>
               <select
                 id="service"
                 name="service"
                 value={formData.service}
                 onChange={handleChange}
-                required
+                onBlur={handleBlur}
+                aria-invalid={Boolean(errors.service)}
+                aria-describedby={errors.service ? 'service-error' : undefined}
               >
                 <option value="" disabled>Choose a service</option>
                 <option value="Tyres">Tyres</option>
@@ -145,11 +210,12 @@ export default function Booking() {
                 <option value="Detailing">Detailing</option>
                 <option value="Full inspection">Full inspection</option>
               </select>
+              {errors.service && <p className="field-error" id="service-error" role="alert">{errors.service}</p>}
             </div>
           </div>
 
           <div className="grid2">
-            <div className="field">
+            <div className={`field ${errors.date ? 'has-error' : ''}`}>
               <label htmlFor="date">Preferred date</label>
               <input
                 id="date"
@@ -158,10 +224,13 @@ export default function Booking() {
                 min={minDate}
                 value={formData.date}
                 onChange={handleChange}
-                required
+                onBlur={handleBlur}
+                aria-invalid={Boolean(errors.date)}
+                aria-describedby={errors.date ? 'date-error' : undefined}
               />
+              {errors.date && <p className="field-error" id="date-error" role="alert">{errors.date}</p>}
             </div>
-            <div className="field">
+            <div className={`field ${errors.time ? 'has-error' : ''}`}>
               <label htmlFor="time">Preferred time</label>
               <input
                 id="time"
@@ -169,12 +238,15 @@ export default function Booking() {
                 type="time"
                 value={formData.time}
                 onChange={handleChange}
-                required
+                onBlur={handleBlur}
+                aria-invalid={Boolean(errors.time)}
+                aria-describedby={errors.time ? 'time-error' : undefined}
               />
+              {errors.time && <p className="field-error" id="time-error" role="alert">{errors.time}</p>}
             </div>
           </div>
 
-          <div className="field">
+          <div className={`field ${errors.notes ? 'has-error' : ''}`}>
             <label htmlFor="notes">Notes (optional)</label>
             <textarea
               id="notes"
@@ -182,8 +254,12 @@ export default function Booking() {
               rows="3"
               value={formData.notes}
               onChange={handleChange}
+              onBlur={handleBlur}
               placeholder="Anything we should know?"
+              aria-invalid={Boolean(errors.notes)}
+              aria-describedby={errors.notes ? 'notes-error' : undefined}
             ></textarea>
+            {errors.notes && <p className="field-error" id="notes-error" role="alert">{errors.notes}</p>}
           </div>
 
           <button type="submit" className="btn btn-amber" disabled={status === 'loading'}>
