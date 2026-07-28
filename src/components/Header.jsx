@@ -1,10 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const scrollPositionRef = useRef(0);
-  const isNavigatingRef = useRef(false);
 
   // Scroll detection for sticky header background
   useEffect(() => {
@@ -14,7 +12,7 @@ export default function Header() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Lock / unlock body scroll & handle Escape key listener
+  // Lock body scroll when menu is open & handle Escape key listener
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape' && menuOpen) {
@@ -23,53 +21,32 @@ export default function Header() {
     };
 
     if (menuOpen) {
-      // Store current scroll position before locking
-      scrollPositionRef.current = window.scrollY;
-      isNavigatingRef.current = false;
-      
-      // Lock body scroll (iOS Safari & cross-browser compliant)
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${scrollPositionRef.current}px`;
-      document.body.style.width = '100%';
       document.body.style.overflow = 'hidden';
-
+      document.body.style.touchAction = 'none';
       window.addEventListener('keydown', handleKeyDown);
     } else {
-      // Restore scroll position ONLY if closing without clicking a nav link
-      const savedScrollPos = scrollPositionRef.current;
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.width = '';
       document.body.style.overflow = '';
-      
-      if (!isNavigatingRef.current && savedScrollPos > 0) {
-        window.scrollTo(0, savedScrollPos);
-      }
-
+      document.body.style.touchAction = '';
       window.removeEventListener('keydown', handleKeyDown);
     }
 
     return () => {
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [menuOpen]);
 
   const toggleMenu = () => setMenuOpen((prev) => !prev);
-  const closeMenu = () => {
-    isNavigatingRef.current = false;
-    setMenuOpen(false);
-  };
+  const closeMenu = () => setMenuOpen(false);
 
   const handleNavClick = (e, hash) => {
     e.preventDefault();
-    isNavigatingRef.current = true;
     setMenuOpen(false);
 
-    // Release body scroll immediately so browser can scroll
-    document.body.style.position = '';
-    document.body.style.top = '';
-    document.body.style.width = '';
+    // Unlock body scroll immediately so the document can scroll smoothly
     document.body.style.overflow = '';
+    document.body.style.touchAction = '';
 
     setTimeout(() => {
       if (hash === '#top') {
@@ -80,7 +57,7 @@ export default function Header() {
           targetEl.scrollIntoView({ behavior: 'smooth' });
         }
       }
-    }, 60);
+    }, 50);
   };
 
   return (
