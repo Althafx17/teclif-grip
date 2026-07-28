@@ -257,6 +257,14 @@ form{background:var(--ink-2);border:1px solid var(--line);border-radius:8px;padd
 }
 .field input::placeholder,.field textarea::placeholder{color:#5c5c5c}
 .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--amber)}
+input[type="date"],
+input[type="time"] {
+  accent-color: #fff;
+}
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: brightness(0) invert(1);
+}
 .field.has-error input,.field.has-error select,.field.has-error textarea{border-color:#ff7b7b}
 .field-error{margin-top:.45rem;color:#ff9b9b;font-size:.78rem}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:1.15rem}
