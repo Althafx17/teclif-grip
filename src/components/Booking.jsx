@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import useScrollReveal from '../hooks/useScrollReveal';
 
 // Active Google Apps Script Web App URL (configurable via VITE_SCRIPT_URL in .env or Vercel)
-const SCRIPT_URL = import.meta.env.VITE_SCRIPT_URL || "https://script.google.com/macros/s/AKfycbxxiZzyDBBB6Y4kZNTytrfOBmLXEr_c30kPA4wlMVhskbcf1zHLwx8nyH_WUMqdCJfUmw/exec"||"https://script.google.com/macros/s/AKfycbx42ZhrFWP9jBvsWRBGFqUuvRElieD8lq88EOk569aIgsfud3ToKnTvVIHCCsKLhauZ/exec";
+const SCRIPT_URL = import.meta.env.VITE_SCRIPT_URL || "https://script.google.com/macros/s/AKfycbyYxun3euPCKWRfSI7T6SmYmrr_hoejdPLi57Ddmlg6Ja2BRxF2YUepJRYsIQQQ3k03AQ/exec";
 
 export default function Booking() {
   const ref = useScrollReveal();
