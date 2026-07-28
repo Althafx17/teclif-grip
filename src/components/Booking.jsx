@@ -1,26 +1,124 @@
 import { useState, useEffect } from 'react';
 import useScrollReveal from '../hooks/useScrollReveal';
 
+// Active Google Apps Script Web App URL (configurable via VITE_SCRIPT_URL in .env or Vercel)
+const SCRIPT_URL = import.meta.env.VITE_SCRIPT_URL || "https://script.google.com/macros/s/AKfycbyxt76LsstOUBrwh0bGQe3Su4WEKggJ0aiodELX6u1j9rR6cS6bxKCpP5kVq2qr3zrUcQ/exec";
+
 export default function Booking() {
   const ref = useScrollReveal();
-  const [showToast, setShowToast] = useState(false);
-  const [buttonText, setButtonText] = useState('Request booking');
   const [minDate, setMinDate] = useState('');
+
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    vehicle: '',
+    service: '',
+    date: '',
+    time: '',
+    notes: '',
+  });
+
+  const [errors, setErrors] = useState({});
+  const [status, setStatus] = useState('idle'); // idle | loading | success | error
 
   useEffect(() => {
     setMinDate(new Date().toISOString().split('T')[0]);
   }, []);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const form = e.target;
-    if (!form.checkValidity()) {
-      form.reportValidity();
-      return;
+  const validateField = (name, value) => {
+    const trimmedValue = value.trim();
+
+    switch (name) {
+      case 'name':
+        if (!trimmedValue) return 'Please enter your name.';
+        if (trimmedValue.length < 2) return 'Please enter at least 2 characters for your name.';
+        return '';
+      case 'phone':
+        if (!trimmedValue) return 'Please enter your phone number.';
+        if (!/^[0-9+()\-\s]{7,15}$/.test(trimmedValue)) return 'Please enter a valid phone number.';
+        return '';
+      case 'vehicle':
+        if (!trimmedValue) return 'Please enter your vehicle make and model.';
+        if (trimmedValue.length < 2) return 'Please enter a valid vehicle name.';
+        return '';
+      case 'service':
+        if (!trimmedValue) return 'Please choose a service.';
+        return '';
+      case 'date':
+        if (!trimmedValue) return 'Please select a preferred date.';
+        if (new Date(trimmedValue) < new Date(new Date().toDateString())) return 'Please choose a future date.';
+        return '';
+      case 'time':
+        if (!trimmedValue) return 'Please select a preferred time.';
+        return '';
+      case 'notes':
+        if (trimmedValue && trimmedValue.length > 200) return 'Notes should be 200 characters or less.';
+        return '';
+      default:
+        return '';
     }
-    setShowToast(true);
-    setButtonText('Request sent ✓');
-    setTimeout(() => form.reset(), 400);
+  };
+
+  const validateForm = (data) => {
+    const nextErrors = {};
+
+    Object.entries(data).forEach(([name, value]) => {
+      const message = validateField(name, value);
+      if (message) nextErrors[name] = message;
+    });
+
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: validateField(name, value) }));
+    if (status !== 'idle') setStatus('idle');
+  };
+
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    setErrors((prev) => ({ ...prev, [name]: validateField(name, value) }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const isValid = validateForm(formData);
+    if (!isValid) return;
+
+    setStatus('loading');
+
+    try {
+      if (SCRIPT_URL && !SCRIPT_URL.includes('YOUR_ID')) {
+        await fetch(SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors', // required for Apps Script cross-origin requests
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify(formData),
+        });
+      } else {
+        // Fallback simulation if SCRIPT_URL is not yet configured
+        await new Promise((res) => setTimeout(res, 600));
+      }
+
+      setStatus('success');
+      setErrors({});
+      setFormData({
+        name: '',
+        phone: '',
+        vehicle: '',
+        service: '',
+        date: '',
+        time: '',
+        notes: '',
+      });
+    } catch (err) {
+      console.error('Booking submission error:', err);
+      setStatus('error');
+    }
   };
 
   return (
@@ -47,32 +145,138 @@ export default function Booking() {
 
         <form id="bookForm" className="reveal" data-d="1" noValidate onSubmit={handleSubmit}>
           <div className="grid2">
-            <div className="field"><label htmlFor="name">Name</label><input id="name" name="name" placeholder="Your name" required /></div>
-            <div className="field"><label htmlFor="phone">Phone</label><input id="phone" name="phone" type="tel" placeholder="+91 …" required /></div>
-          </div>
-          <div className="grid2">
-            <div className="field"><label htmlFor="vehicle">Vehicle</label><input id="vehicle" name="vehicle" placeholder="Make & model" required /></div>
-            <div className="field">
-              <label htmlFor="service">Service</label>
-              <select id="service" name="service" required defaultValue="">
-                <option value="" disabled>Choose a service</option>
-                <option>Tyres</option>
-                <option>Car Care / Service</option>
-                <option>Car Wash</option>
-                <option>Oil Change</option>
-                <option>Detailing</option>
-                <option>Full inspection</option>
-              </select>
+            <div className={`field ${errors.name ? 'has-error' : ''}`}>
+              <label htmlFor="name">Name</label>
+              <input
+                id="name"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                placeholder="Your name"
+                aria-invalid={Boolean(errors.name)}
+                aria-describedby={errors.name ? 'name-error' : undefined}
+              />
+              {errors.name && <p className="field-error" id="name-error" role="alert">{errors.name}</p>}
+            </div>
+            <div className={`field ${errors.phone ? 'has-error' : ''}`}>
+              <label htmlFor="phone">Phone</label>
+              <input
+                id="phone"
+                name="phone"
+                type="tel"
+                value={formData.phone}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                placeholder="+91 …"
+                aria-invalid={Boolean(errors.phone)}
+                aria-describedby={errors.phone ? 'phone-error' : undefined}
+              />
+              {errors.phone && <p className="field-error" id="phone-error" role="alert">{errors.phone}</p>}
             </div>
           </div>
+
           <div className="grid2">
-            <div className="field"><label htmlFor="date">Preferred date</label><input id="date" name="date" type="date" min={minDate} required /></div>
-            <div className="field"><label htmlFor="time">Preferred time</label><input id="time" name="time" type="time" required /></div>
+            <div className={`field ${errors.vehicle ? 'has-error' : ''}`}>
+              <label htmlFor="vehicle">Vehicle</label>
+              <input
+                id="vehicle"
+                name="vehicle"
+                value={formData.vehicle}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                placeholder="Make & model"
+                aria-invalid={Boolean(errors.vehicle)}
+                aria-describedby={errors.vehicle ? 'vehicle-error' : undefined}
+              />
+              {errors.vehicle && <p className="field-error" id="vehicle-error" role="alert">{errors.vehicle}</p>}
+            </div>
+            <div className={`field ${errors.service ? 'has-error' : ''}`}>
+              <label htmlFor="service">Service</label>
+              <select
+                id="service"
+                name="service"
+                value={formData.service}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                aria-invalid={Boolean(errors.service)}
+                aria-describedby={errors.service ? 'service-error' : undefined}
+              >
+                <option value="" disabled>Choose a service</option>
+                <option value="Tyres">Tyres</option>
+                <option value="Car Care / Service">Car Care / Service</option>
+                <option value="Car Wash">Car Wash</option>
+                <option value="Oil Change">Oil Change</option>
+                <option value="Detailing">Detailing</option>
+                <option value="Full inspection">Full inspection</option>
+              </select>
+              {errors.service && <p className="field-error" id="service-error" role="alert">{errors.service}</p>}
+            </div>
           </div>
-          <div className="field"><label htmlFor="notes">Notes (optional)</label><textarea id="notes" name="notes" rows="3" placeholder="Anything we should know?"></textarea></div>
-          <button type="submit" className="btn btn-amber">{buttonText}</button>
+
+          <div className="grid2">
+            <div className={`field ${errors.date ? 'has-error' : ''}`}>
+              <label htmlFor="date">Preferred date</label>
+              <input
+                id="date"
+                name="date"
+                type="date"
+                min={minDate}
+                value={formData.date}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                aria-invalid={Boolean(errors.date)}
+                aria-describedby={errors.date ? 'date-error' : undefined}
+              />
+              {errors.date && <p className="field-error" id="date-error" role="alert">{errors.date}</p>}
+            </div>
+            <div className={`field ${errors.time ? 'has-error' : ''}`}>
+              <label htmlFor="time">Preferred time</label>
+              <input
+                id="time"
+                name="time"
+                type="time"
+                value={formData.time}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                aria-invalid={Boolean(errors.time)}
+                aria-describedby={errors.time ? 'time-error' : undefined}
+              />
+              {errors.time && <p className="field-error" id="time-error" role="alert">{errors.time}</p>}
+            </div>
+          </div>
+
+          <div className={`field ${errors.notes ? 'has-error' : ''}`}>
+            <label htmlFor="notes">Notes (optional)</label>
+            <textarea
+              id="notes"
+              name="notes"
+              rows="3"
+              value={formData.notes}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              placeholder="Anything we should know?"
+              aria-invalid={Boolean(errors.notes)}
+              aria-describedby={errors.notes ? 'notes-error' : undefined}
+            ></textarea>
+            {errors.notes && <p className="field-error" id="notes-error" role="alert">{errors.notes}</p>}
+          </div>
+
+          <button type="submit" className="btn btn-amber" disabled={status === 'loading'}>
+            {status === 'loading' ? 'Booking...' : 'Request booking'}
+          </button>
+
           <p className="form-note">No payment now — we'll call to confirm your slot.</p>
-          <div className={`toast${showToast ? ' show' : ''}`} id="toast">Thanks — your request is in. We'll call you shortly to confirm. That's the GRIP.</div>
+
+          <div className={`toast${status === 'success' ? ' show' : ''}`} id="toast">
+            Thanks — your request is in. We'll call you shortly to confirm. That's the GRIP.
+          </div>
+
+          {status === 'error' && (
+            <div className="toast show" style={{ borderColor: '#ff4d4d', color: '#ff8080', background: 'rgba(255,77,77,0.12)' }}>
+              Something went wrong. Please try again or call us directly.
+            </div>
+          )}
         </form>
       </div>
     </section>
