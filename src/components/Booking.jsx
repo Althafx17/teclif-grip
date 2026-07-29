@@ -263,7 +263,17 @@ export default function Booking() {
           </div>
 
           <button type="submit" className="btn btn-amber" disabled={status === 'loading'}>
-            {status === 'loading' ? 'Booking...' : 'Request booking'}
+            {status === 'loading' ? (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ animation: 'spin 1s linear infinite' }}>
+                  <circle cx="12" cy="12" r="10" strokeOpacity="0.25" />
+                  <path d="M12 2a10 10 0 0 1 10 10" />
+                </svg>
+                Submitting booking...
+              </span>
+            ) : (
+              'Request booking'
+            )}
           </button>
 
           <p className="form-note">No payment now — we'll call to confirm your slot.</p>

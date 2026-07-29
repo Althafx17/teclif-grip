@@ -5,7 +5,12 @@ export default function Hero() {
 
   return (
     <section className="hero" id="top" ref={ref}>
-      <div className="hero-bg"><div className="tread"></div></div>
+      <div className="hero-bg">
+        <div className="hero-media-loop">
+          <img src="/images/hero-chatgpt-bg.png" alt="GRIP Hero Background" className="hero-bg-img" />
+        </div>
+        <div className="tread"></div>
+      </div>
       <div className="slash"></div>
       <div className="wrap hero-inner">
         <p className="eyebrow reveal">Automotive Experience Center</p>

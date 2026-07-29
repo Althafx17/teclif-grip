@@ -35,7 +35,7 @@
 
   .framework,
   .vite {
-    position: absolute;
+    position: static;
   }
 
   .framework {
