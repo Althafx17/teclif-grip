@@ -30,7 +30,7 @@ export default function Experience() {
         <div className="roof-visual reveal" data-d="2" aria-hidden="true">
           <span className="cap">Under one roof</span>
           <div className="g-lg">
-            <img src="/images/logo-uploaded.png" alt="GRIP Logo"style={{ height: '24.2rem', width: 'auto' }} />
+            <img src="/images/logo-uploaded.png" alt="GRIP Logo" loading="lazy" style={{ height: '24.2rem', width: 'auto' }} />
           </div>
           <div className="cut"></div>
         </div>

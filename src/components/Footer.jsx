@@ -5,7 +5,7 @@ export default function Footer() {
         <div className="foot-top">
           <div className="foot-brand">
             <a href="#top" className="mark-img" aria-label="GRIP">
-              <img src="/images/logo-uploaded.png" alt="GRIP Logo" style={{ height: '8.2rem', width: 'auto' }} />
+              <img src="/images/logo-uploaded.png" alt="GRIP Logo" loading="lazy" style={{ height: '4.2rem', width: 'auto' }} />
             </a>
             <p>A next-generation automotive care center. Quality, trust and convenience for every vehicle owner — under one roof.</p>
           </div>
