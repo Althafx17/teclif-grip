@@ -64,34 +64,72 @@ export default function Header() {
     <>
       <header id="header" className={scrolled ? 'scrolled' : ''}>
         <div className="wrap nav">
-          <a href="#top" className="mark" aria-label="GRIP home" onClick={(e) => handleNavClick(e, '#top')}>
+          {/* Menu Button on Left */}
+          <button
+            className={`menu-btn${menuOpen ? ' open' : ''}`}
+            id="menu-btn"
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={menuOpen}
+            onClick={toggleMenu}
+          >
+            <div className="burger-icon">
+              <span></span><span></span><span></span>
+            </div>
+            <span className="menu-btn-label">MENU</span>
+          </button>
+
+          {/* Centered Logo */}
+          <a href="#top" className="mark nav-logo-centered" aria-label="GRIP home" onClick={(e) => handleNavClick(e, '#top')}>
             <img src="/images/navbar-icon.png" alt="GRIP" />
-            <span className="word">GRIP<i className="dot"></i></span>
+            {/* <span className="word">GRIP<i className="dot"></i></span> */}
           </a>
           
+          {/* Right-side CTA button */}
+          <div className="nav-right-spacer">
+            <a
+              href="#book"
+              className="btn btn-amber nav-cta header-cta"
+              onClick={(e) => handleNavClick(e, '#book')}
+            >
+              Book a visit
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </a>
+          </div>
+
+          {/* Slide-in Menu Drawer on Left */}
           <nav
-            className={`nav-links${menuOpen ? ' open' : ''}`}
+            className={`nav-drawer-left${menuOpen ? ' open' : ''}`}
             id="menu"
             role="dialog"
             aria-modal="true"
             aria-label="Navigation menu"
           >
-            <a href="#services" onClick={(e) => handleNavClick(e, '#services')}>Services</a>
-            <a href="#experience" onClick={(e) => handleNavClick(e, '#experience')}>Experience</a>
-            <a href="#why" onClick={(e) => handleNavClick(e, '#why')}>Why GRIP</a>
-            <a href="#process" onClick={(e) => handleNavClick(e, '#process')}>How it works</a>
-            <a href="#book" className="btn btn-amber nav-cta" onClick={(e) => handleNavClick(e, '#book')}>Book a visit</a>
-          </nav>
+            <div className="drawer-header">
+              <span className="drawer-title">NAVIGATION</span>
+              <button className="drawer-close-btn" onClick={closeMenu} aria-label="Close menu">✕</button>
+            </div>
 
-          <button
-            className={`burger${menuOpen ? ' x' : ''}`}
-            id="burger"
-            aria-label={menuOpen ? "Close menu" : "Open menu"}
-            aria-expanded={menuOpen}
-            onClick={toggleMenu}
-          >
-            <span></span><span></span><span></span>
-          </button>
+            <div className="drawer-links">
+              <a href="#services" onClick={(e) => handleNavClick(e, '#services')}>
+                <span className="n">01</span> Services
+              </a>
+              <a href="#experience" onClick={(e) => handleNavClick(e, '#experience')}>
+                <span className="n">02</span> Experience
+              </a>
+              <a href="#why" onClick={(e) => handleNavClick(e, '#why')}>
+                <span className="n">03</span> Why GRIP
+              </a>
+              <a href="#process" onClick={(e) => handleNavClick(e, '#process')}>
+                <span className="n">04</span> How it works
+              </a>
+            </div>
+
+            <div className="drawer-footer">
+              <a href="#book" className="btn btn-amber nav-cta" onClick={(e) => handleNavClick(e, '#book')}>
+                Book a visit →
+              </a>
+            </div>
+          </nav>
         </div>
       </header>
 

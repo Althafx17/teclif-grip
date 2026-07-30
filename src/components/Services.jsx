@@ -4,7 +4,8 @@ const services = [
   {
     num: '01',
     title: 'Tyres',
-    desc: 'Fitting, balancing, alignment and rotation across every major brand — with pressure and tread checks on the house.',
+    image: '/images/svc-tyres.jpg',
+    desc: 'Fitting, balancing, alignment and rotation across every major brand — pressure and tread checks on the house.',
     tags: ['Fitting', 'Alignment', 'Balancing'],
     icon: (
       <svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="19"/><circle cx="24" cy="24" r="7"/><path d="M24 5v9M24 34v9M5 24h9M34 24h9M11 11l6 6M31 31l6 6M37 11l-6 6M17 31l-6 6"/></svg>
@@ -13,6 +14,7 @@ const services = [
   {
     num: '02',
     title: 'Car Care',
+    image: '/images/svc-car-care.jpg',
     desc: 'Periodic service, diagnostics, brakes and fluids — logged, transparent and done right the first time.',
     tags: ['Service', 'Diagnostics', 'Brakes'],
     icon: (
@@ -22,6 +24,7 @@ const services = [
   {
     num: '03',
     title: 'Car Wash',
+    image: '/images/svc-car-wash.jpg',
     desc: 'Foam, rinse and hand-finish in about 45 minutes. Express outside, or a full interior deep-clean inside.',
     tags: ['Express', 'Foam', 'Interior'],
     icon: (
@@ -31,6 +34,7 @@ const services = [
   {
     num: '04',
     title: 'Oil Change',
+    image: '/images/svc-oil-change.jpg',
     desc: 'Genuine oils and filters matched to your engine, with a full multi-point inspection before you leave.',
     tags: ['Genuine oil', 'Filters', 'Inspection'],
     icon: (
@@ -40,6 +44,7 @@ const services = [
   {
     num: '05',
     title: 'Detailing',
+    image: '/images/svc-detailing.jpg',
     desc: 'Ceramic coating, polishing and paint correction that brings the showroom shine back — and keeps it.',
     tags: ['Ceramic', 'Polish', 'Correction'],
     icon: (
@@ -49,6 +54,7 @@ const services = [
   {
     num: '06',
     title: 'Lounge',
+    image: '/images/svc-lounge.jpg',
     desc: 'Fast Wi-Fi, real coffee and comfortable seating. Work or unwind while we take care of the rest.',
     tags: ['Wi-Fi', 'Coffee', 'Comfort'],
     icon: (
@@ -72,12 +78,15 @@ export default function Services() {
         <div className="svc-grid">
           {services.map((svc, i) => (
             <article className="svc reveal" data-d={i % 3 === 0 ? undefined : String(i % 3)} key={svc.num}>
-              <span className="num">{svc.num}</span>
-              <div className="ico">{svc.icon}</div>
-              <h3>{svc.title}</h3>
-              <p>{svc.desc}</p>
-              <div className="tags">
-                {svc.tags.map((tag) => <i key={tag}>{tag}</i>)}
+              <div className="svc-img-bg" style={{ backgroundImage: `url(${svc.image})` }}></div>
+              <div className="svc-content">
+                <span className="num">{svc.num}</span>
+                <div className="ico">{svc.icon}</div>
+                <h3>{svc.title}</h3>
+                <p>{svc.desc}</p>
+                <div className="tags">
+                  {svc.tags.map((tag) => <i key={tag}>{tag}</i>)}
+                </div>
               </div>
             </article>
           ))}
