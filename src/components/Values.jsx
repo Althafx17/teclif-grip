@@ -10,7 +10,19 @@ export default function Values() {
   const ref = useScrollReveal();
 
   return (
-    <section className="band" id="why" ref={ref}>
+    <section className="band why-section" id="why" ref={ref}>
+      <div className="why-video-bg">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="why-bg-video"
+        >
+          <source src="/images/hero-bg-video.mp4" type="video/mp4" />
+        </video>
+        <div className="why-video-overlay"></div>
+      </div>
       <div className="wrap">
         <div className="sec-head reveal">
           <p className="eyebrow">Why GRIP</p>

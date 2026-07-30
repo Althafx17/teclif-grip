@@ -7,7 +7,7 @@ export default function Hero() {
     <section className="hero" id="top" ref={ref}>
       <div className="hero-bg">
         <div className="hero-media-loop">
-          <img src="/images/hero-chatgpt-bg.png" alt="GRIP Hero Background" className="hero-bg-img" />
+          <img src="/images/grip- bg.png" alt="GRIP Hero Background" className="hero-bg-img" />
         </div>
         <div className="tread"></div>
       </div>
