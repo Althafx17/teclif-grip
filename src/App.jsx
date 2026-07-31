@@ -8,7 +8,6 @@ import Process from './components/Process';
 import CtaBand from './components/CtaBand';
 import Booking from './components/Booking';
 import Footer from './components/Footer';
-import StickyCta from './components/StickyCta';
 
 export default function App() {
   return (
@@ -25,7 +24,6 @@ export default function App() {
         <Booking />
       </main>
       <Footer />
-      <StickyCta />
     </>
   );
 }
